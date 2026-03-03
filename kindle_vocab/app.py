@@ -4,6 +4,7 @@ Flask web UI for Kindle Vocab CSV Builder.
 
 from __future__ import annotations
 
+import json
 import threading
 import uuid
 
@@ -25,8 +26,25 @@ from .pipeline import get_progress, init_progress, run_job
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
 
-# Store filter choices per job (in-memory, lives as long as the process)
-_filters: dict = {}
+
+def _filters_path(job_id: str):
+    return UPLOAD_DIR / f"{job_id}_filters.json"
+
+
+def _save_filters(job_id: str, filters: dict):
+    _filters_path(job_id).write_text(json.dumps(filters))
+
+
+def _load_filters(job_id: str) -> dict:
+    p = _filters_path(job_id)
+    if p.exists():
+        try:
+            filters = json.loads(p.read_text())
+            p.unlink(missing_ok=True)
+            return filters
+        except Exception:
+            pass
+    return {"mode": "all"}
 
 
 @app.get("/")
@@ -74,21 +92,25 @@ def select_submit(job_id: str):
     mode = request.form.get("mode", "all")
 
     if mode == "all":
-        _filters[job_id] = {"mode": "all"}
+        _save_filters(job_id, {"mode": "all"})
     elif mode == "by_book":
         selected = request.form.getlist("books")
         if not selected:
             flash("Please select at least one book.")
             return redirect(url_for("select", job_id=job_id))
-        _filters[job_id] = {"mode": "by_book", "selected": selected}
+        # Expand comma-separated book_ids from consolidated groups
+        book_ids = []
+        for val in selected:
+            book_ids.extend(val.split(","))
+        _save_filters(job_id, {"mode": "by_book", "selected": book_ids})
     elif mode == "by_author":
         selected = request.form.getlist("authors")
         if not selected:
             flash("Please select at least one author.")
             return redirect(url_for("select", job_id=job_id))
-        _filters[job_id] = {"mode": "by_author", "selected": selected}
+        _save_filters(job_id, {"mode": "by_author", "selected": selected})
     else:
-        _filters[job_id] = {"mode": "all"}
+        _save_filters(job_id, {"mode": "all"})
 
     return redirect(url_for("process_async", job_id=job_id))
 
@@ -100,7 +122,7 @@ def process_async(job_id: str):
         flash("Upload not found.")
         return redirect(url_for("index"))
 
-    filters = _filters.pop(job_id, {"mode": "all"})
+    filters = _load_filters(job_id)
     init_progress(job_id)
 
     def worker():
