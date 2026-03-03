@@ -190,6 +190,48 @@ def process_record(
         "morphology": morphology,
         "morphology_source": morph_source,
         "status": "COMPLETE" if complete else "INCOMPLETE",
-        "fail_reasons": " ; ".join(reasons),
+        "fail_reasons": " ; ".join(_humanize(r) for r in reasons),
         "is_complete": complete,
     }
+
+
+def _humanize(code: str) -> str:
+    """Convert an internal fail code to a short human-readable explanation."""
+    if code == "DEF_MISSING":
+        return "No definition found"
+    if code == "MW_NO_EXACT_MATCH":
+        return "Word not in dictionary"
+    if code == "POS_SKIP":
+        return "Part of speech could not be verified"
+    if code == "STANZA_TOKEN_NOT_FOUND":
+        return "Word not found in sentence"
+    if code == "ACCENT_LOOSE_MATCH":
+        return "Accent mismatch between word and sentence"
+
+    import re
+
+    m = re.match(r"POS_MISMATCH\(MW=(\w+),upos=(\w+)\)", code)
+    if m:
+        mw = m.group(1)
+        upos = m.group(2)
+        upos_names = {
+            "NOUN": "noun", "VERB": "verb", "ADJ": "adjective",
+            "ADV": "adverb", "DET": "determiner", "PRON": "pronoun",
+            "ADP": "preposition", "CCONJ": "conjunction", "SCONJ": "conjunction",
+            "PROPN": "proper noun", "INTJ": "interjection", "NUM": "numeral",
+        }
+        ctx = upos_names.get(upos, upos.lower())
+        return f"Dictionary says \"{mw}\" but context suggests \"{ctx}\""
+
+    m = re.match(r"MORPH_MISSING\((.+)\)", code)
+    if m:
+        detail = m.group(1)
+        if detail == "form_not_in_table":
+            return "Verb form not recognized"
+        if detail == "ambiguous":
+            return "Multiple possible verb forms"
+        if detail == "table_empty":
+            return "Verb conjugation unavailable"
+        return f"Verb morphology missing ({detail})"
+
+    return code

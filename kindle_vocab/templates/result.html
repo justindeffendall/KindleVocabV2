@@ -1,49 +1,130 @@
+{% from "base.html" import head, header %}
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Done</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  {{ head("Results") }}
 </head>
-<body class="bg-light">
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
-      <div class="card shadow-sm">
-        <div class="card-body p-4">
-          <h1 class="h4 mb-3">Finished ✅</h1>
-          <p class="text-muted">
-            <strong>{{ count }}</strong> complete rows.
-            {% if meta.get('incomplete_rows') %}
-              <span class="text-warning">{{ meta['incomplete_rows'] }} routed to incomplete.</span>
-            {% endif %}
-          </p>
-
-          <div class="mb-3">
-            <div class="small text-muted">Metadata</div>
-            <pre class="mb-0 bg-body-tertiary p-2 rounded small">{{ meta }}</pre>
-          </div>
-
-          <div class="d-flex gap-2 flex-wrap">
-            <a class="btn btn-success" href="/download/{{ csv_name }}">Download Complete CSV</a>
-            {% if incomplete_csv_name %}
-              <a class="btn btn-outline-warning" href="/download/{{ incomplete_csv_name }}">Download Incomplete CSV</a>
-            {% endif %}
-            {% if log_name %}
-              <a class="btn btn-outline-secondary" href="/download/{{ log_name }}">Download Forensic Log</a>
-            {% endif %}
-            <a class="btn btn-link" href="/">Process another</a>
-          </div>
-
-          <hr class="my-4">
-          <div class="text-muted small">
-            CSV columns: <code>word, definition, label, book, authors, usage, morphology, morphology_source, status, fail_reasons</code>
-          </div>
-        </div>
+<body>
+<div class="container container--wide">
+  {{ header() }}
+  <div class="card" style="padding:1.75rem;">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+      <div>
+        <h1 class="page-title" style="margin-bottom:0.25rem;">Results</h1>
+        <p class="muted text-small">
+          <span class="fw-semi">{{ count }}</span> complete{% if meta.get('incomplete_rows') %},
+          <span class="fw-semi">{{ meta['incomplete_rows'] }}</span> incomplete{% endif %}
+        </p>
       </div>
+      <div class="toggle-group">
+        <button type="button" class="toggle-btn active" onclick="showTable('complete',this)">Complete</button>
+        {% if incomplete_csv_name %}
+        <button type="button" class="toggle-btn" onclick="showTable('incomplete',this)">Incomplete</button>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="table-complete" class="data-table-wrap">
+      <div class="data-table-scroll">
+        <table class="data-table" id="tbl-complete">
+          <thead><tr><th>Loading...</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span class="muted" id="count-complete"></span>
+        <a class="btn btn--success" href="/download/{{ csv_name }}">Download CSV</a>
+      </div>
+    </div>
+
+    {% if incomplete_csv_name %}
+    <div id="incomplete-warning" style="display:none;margin-top:1rem;padding:0.75rem 1rem;background:#fdf6e3;border:1px solid #e6d5a0;border-radius:3px;font-size:0.85rem;color:#6b5210;">
+      These entries could not be fully verified. Definitions, parts of speech, and verb forms may be inaccurate. Review each entry carefully before use.
+    </div>
+    <div id="table-incomplete" class="data-table-wrap" style="display:none;">
+      <div class="data-table-scroll">
+        <table class="data-table" id="tbl-incomplete">
+          <thead><tr><th>Loading...</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span class="muted" id="count-incomplete"></span>
+        <a class="btn btn--earth" href="/download/{{ incomplete_csv_name }}">Download CSV</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="margin-top:1.25rem; display:flex; align-items:center; justify-content:space-between;">
+      <a href="/" class="btn--link">Process another</a>
+      <a href="https://buymeacoffee.com/kindlevocabbuilder" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--ink-faint);font-size:0.82rem;text-decoration:none;transition:color 0.15s;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+        Buy me a coffee
+      </a>
     </div>
   </div>
 </div>
+<script>
+var COMPLETE_COLS = ['word','definition','label','book','morphology'];
+var INCOMPLETE_COLS = ['word','definition','label','book','fail_reasons'];
+
+function showTable(which, btn) {
+  document.querySelectorAll('.toggle-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('table-complete').style.display = which==='complete'?'':'none';
+  var inc = document.getElementById('table-incomplete');
+  if(inc) inc.style.display = which==='incomplete'?'':'none';
+  var warn = document.getElementById('incomplete-warning');
+  if(warn) warn.style.display = which==='incomplete'?'':'none';
+}
+
+function parseCSVLine(line) {
+  var result=[],current='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch==='"'){if(inQ&&i+1<line.length&&line[i+1]==='"'){current+='"';i++;}else{inQ=!inQ;}}
+    else if(ch===','&&!inQ){result.push(current.trim());current='';}
+    else{current+=ch;}
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function renderCSV(csvText,tableId,countId,displayCols){
+  var lines=csvText.trim().split('\n');
+  if(lines.length<2)return;
+  var headers=parseCSVLine(lines[0]);
+  var colIdx=[],colNames=[];
+  for(var c=0;c<displayCols.length;c++){
+    var idx=headers.indexOf(displayCols[c]);
+    if(idx!==-1){colIdx.push(idx);colNames.push(displayCols[c]);}
+  }
+  var pretty={'fail_reasons':'reason'};
+  var table=document.getElementById(tableId);
+  var hrow='<tr>';
+  for(var i=0;i<colNames.length;i++) hrow+='<th>'+(pretty[colNames[i]]||colNames[i])+'</th>';
+  table.querySelector('thead').innerHTML=hrow+'</tr>';
+  var html='';
+  for(var r=1;r<lines.length;r++){
+    if(!lines[r].trim())continue;
+    var fields=parseCSVLine(lines[r]);
+    html+='<tr>';
+    for(var j=0;j<colIdx.length;j++){
+      var val=(fields[colIdx[j]]||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      if(colNames[j]==='definition'&&val.length>80) val=val.substring(0,77)+'...';
+      html+='<td>'+val+'</td>';
+    }
+    html+='</tr>';
+  }
+  table.querySelector('tbody').innerHTML=html;
+  var ce=document.getElementById(countId);
+  if(ce) ce.textContent=(lines.length-1)+' rows';
+}
+
+fetch('/download/{{ csv_name }}').then(function(r){return r.text();}).then(function(t){renderCSV(t,'tbl-complete','count-complete',COMPLETE_COLS);});
+{% if incomplete_csv_name %}
+fetch('/download/{{ incomplete_csv_name }}').then(function(r){return r.text();}).then(function(t){renderCSV(t,'tbl-incomplete','count-incomplete',INCOMPLETE_COLS);});
+{% endif %}
+</script>
 </body>
 </html>

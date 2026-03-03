@@ -76,10 +76,7 @@ def select_submit(job_id: str):
     if mode == "all":
         _filters[job_id] = {"mode": "all"}
     elif mode == "by_book":
-        raw = request.form.getlist("books")
-        selected = []
-        for val in raw:
-            selected.extend(val.split(","))
+        selected = request.form.getlist("books")
         if not selected:
             flash("Please select at least one book.")
             return redirect(url_for("select", job_id=job_id))
