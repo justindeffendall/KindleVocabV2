@@ -7,6 +7,7 @@ Coordinates: DB extraction → MW lookups → conjugation tables → record proc
 from __future__ import annotations
 
 import csv
+import time
 import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -43,6 +44,38 @@ def init_progress(job_id: str) -> None:
         }
 
 
+# ── Cleanup old files ────────────────────────────────────────────────────────
+
+_CLEANUP_AGE_SEC = 30 * 60  # 30 minutes
+
+
+def _cleanup_old_files(current_job_id: str) -> None:
+    """
+    Delete upload and output files older than 30 minutes,
+    skipping files belonging to the current job and the MW cache.
+    """
+    now = time.time()
+    for directory in (UPLOAD_DIR, OUTPUT_DIR):
+        if not directory.exists():
+            continue
+        for f in directory.iterdir():
+            if not f.is_file():
+                continue
+            # Keep MW cache
+            if f.name == "mw_cache.json":
+                continue
+            # Keep current job's files
+            if current_job_id in f.name:
+                continue
+            # Delete if older than threshold
+            try:
+                age = now - f.stat().st_mtime
+                if age > _CLEANUP_AGE_SEC:
+                    f.unlink()
+            except Exception:
+                pass
+
+
 # ── Main pipeline ────────────────────────────────────────────────────────────
 
 def run_job(job_id: str, filters: Optional[Dict[str, Any]] = None) -> None:
@@ -61,6 +94,7 @@ def run_job(job_id: str, filters: Optional[Dict[str, Any]] = None) -> None:
         raise RuntimeError("verbecc not available. Run: pip install verbecc")
 
     db_path = UPLOAD_DIR / f"{job_id}_vocab.db"
+    _cleanup_old_files(job_id)
     records, db_meta = fetch_lookups(db_path, filters=filters)
     total = len(records)
 
