@@ -122,7 +122,7 @@ def run_job(job_id: str, filters: Optional[Dict[str, Any]] = None) -> None:
 
     try:
         # ── Step 1: Load Stanza (first run downloads model) ──
-        update_progress(job_id, message="Loading Stanza model (first run downloads it)…")
+        update_progress(job_id, message="Loading Stanza model…")
         flog.sub("Stanza Init")
         from .tokenizer import tokenize
         tokenize("hola")  # warm up

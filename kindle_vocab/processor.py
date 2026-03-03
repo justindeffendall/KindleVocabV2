@@ -182,7 +182,7 @@ def process_record(
 
     return {
         "word": stem,
-        "definition": definition or "MISSING",
+        "definition": definition,
         "label": label,
         "book": rec["book"],
         "authors": rec["authors"],
