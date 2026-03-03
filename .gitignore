@@ -15,6 +15,7 @@ venv/
 # Project directories (generated at runtime)
 uploads/
 outputs/
+verbecc.log
 
 # IDE
 .vscode/
