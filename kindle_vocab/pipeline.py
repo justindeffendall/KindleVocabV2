@@ -9,7 +9,7 @@ from __future__ import annotations
 import csv
 import threading
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from . import conjugation
 from .config import CSV_COLUMNS, MW_API_KEY, OUTPUT_DIR, UPLOAD_DIR
@@ -45,7 +45,7 @@ def init_progress(job_id: str) -> None:
 
 # ── Main pipeline ────────────────────────────────────────────────────────────
 
-def run_job(job_id: str) -> None:
+def run_job(job_id: str, filters: Optional[Dict[str, Any]] = None) -> None:
     """
     Full pipeline:
       1. Extract lookups from DB
@@ -61,7 +61,7 @@ def run_job(job_id: str) -> None:
         raise RuntimeError("verbecc not available. Run: pip install verbecc")
 
     db_path = UPLOAD_DIR / f"{job_id}_vocab.db"
-    records, db_meta = fetch_lookups(db_path)
+    records, db_meta = fetch_lookups(db_path, filters=filters)
     total = len(records)
 
     update_progress(job_id, total=total, current=0, message="Extracting lookups…")

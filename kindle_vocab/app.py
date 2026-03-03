@@ -18,12 +18,15 @@ from flask import (
     url_for,
 )
 
-from .config import FLASK_SECRET, MW_API_KEY, OUTPUT_DIR, UPLOAD_DIR
-from .db_reader import is_sqlite
+from .config import FLASK_SECRET, OUTPUT_DIR, UPLOAD_DIR
+from .db_reader import is_sqlite, scan_books
 from .pipeline import get_progress, init_progress, run_job
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
+
+# Store filter choices per job (in-memory, lives as long as the process)
+_filters: dict = {}
 
 
 @app.get("/")
@@ -47,6 +50,49 @@ def upload():
         flash("That file doesn't look like a SQLite database.")
         return redirect(url_for("index"))
 
+    return redirect(url_for("select", job_id=job_id))
+
+
+@app.get("/select/<job_id>")
+def select(job_id: str):
+    db_path = UPLOAD_DIR / f"{job_id}_vocab.db"
+    if not db_path.exists():
+        flash("Upload not found.")
+        return redirect(url_for("index"))
+
+    books = scan_books(db_path)
+    return render_template("select.html", job_id=job_id, books=books)
+
+
+@app.post("/select/<job_id>")
+def select_submit(job_id: str):
+    db_path = UPLOAD_DIR / f"{job_id}_vocab.db"
+    if not db_path.exists():
+        flash("Upload not found.")
+        return redirect(url_for("index"))
+
+    mode = request.form.get("mode", "all")
+
+    if mode == "all":
+        _filters[job_id] = {"mode": "all"}
+    elif mode == "by_book":
+        raw = request.form.getlist("books")
+        selected = []
+        for val in raw:
+            selected.extend(val.split(","))
+        if not selected:
+            flash("Please select at least one book.")
+            return redirect(url_for("select", job_id=job_id))
+        _filters[job_id] = {"mode": "by_book", "selected": selected}
+    elif mode == "by_author":
+        selected = request.form.getlist("authors")
+        if not selected:
+            flash("Please select at least one author.")
+            return redirect(url_for("select", job_id=job_id))
+        _filters[job_id] = {"mode": "by_author", "selected": selected}
+    else:
+        _filters[job_id] = {"mode": "all"}
+
     return redirect(url_for("process_async", job_id=job_id))
 
 
@@ -57,11 +103,12 @@ def process_async(job_id: str):
         flash("Upload not found.")
         return redirect(url_for("index"))
 
+    filters = _filters.pop(job_id, {"mode": "all"})
     init_progress(job_id)
 
     def worker():
         try:
-            run_job(job_id)
+            run_job(job_id, filters=filters)
         except Exception as e:
             from .pipeline import _progress, _progress_lock
             with _progress_lock:
