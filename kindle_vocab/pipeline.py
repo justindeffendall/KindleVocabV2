@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import csv
 import time
-import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -19,29 +18,40 @@ from .logger import ForensicLogger
 from .mw_client import MWClient
 from .processor import process_record
 
-# ── Progress tracking ────────────────────────────────────────────────────────
+# ── Progress tracking (file-based for multi-worker compatibility) ─────────
 
-_progress: Dict[str, Dict[str, Any]] = {}
-_progress_lock = threading.Lock()
+def _progress_path(job_id: str) -> Path:
+    return OUTPUT_DIR / f"{job_id}_progress.json"
 
 
 def update_progress(job_id: str, **kw: Any) -> None:
-    with _progress_lock:
-        if job_id in _progress:
-            _progress[job_id].update(kw)
+    import json
+    p = _progress_path(job_id)
+    try:
+        data = json.loads(p.read_text()) if p.exists() else {}
+    except Exception:
+        data = {}
+    data.update(kw)
+    p.write_text(json.dumps(data))
 
 
 def get_progress(job_id: str) -> Dict[str, Any] | None:
-    with _progress_lock:
-        p = _progress.get(job_id)
-        return dict(p) if p else None
+    import json
+    p = _progress_path(job_id)
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text())
+    except Exception:
+        return None
 
 
 def init_progress(job_id: str) -> None:
-    with _progress_lock:
-        _progress[job_id] = {
-            "state": "running", "current": 0, "total": 1, "message": "Starting…",
-        }
+    import json
+    p = _progress_path(job_id)
+    p.write_text(json.dumps({
+        "state": "running", "current": 0, "total": 1, "message": "Starting...",
+    }))
 
 
 # ── Cleanup old files ────────────────────────────────────────────────────────
@@ -190,15 +200,15 @@ def run_job(job_id: str, filters: Optional[Dict[str, Any]] = None) -> None:
         "incomplete_rows": bad_count,
     })
 
-    with _progress_lock:
-        _progress[job_id] = {
-            "state": "done",
-            "csv_name": out_csv.name,
-            "incomplete_csv_name": inc_csv.name,
-            "log_name": log_path.name,
-            "count": ok_count,
-            "meta": meta,
-            "message": "Done",
-            "current": total,
-            "total": total,
-        }
+    update_progress(
+        job_id,
+        state="done",
+        csv_name=out_csv.name,
+        incomplete_csv_name=inc_csv.name,
+        log_name=log_path.name,
+        count=ok_count,
+        meta=meta,
+        message="Done",
+        current=total,
+        total=total,
+    )

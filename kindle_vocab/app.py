@@ -107,9 +107,8 @@ def process_async(job_id: str):
         try:
             run_job(job_id, filters=filters)
         except Exception as e:
-            from .pipeline import _progress, _progress_lock
-            with _progress_lock:
-                _progress[job_id].update({"state": "error", "message": str(e)})
+            from .pipeline import update_progress
+            update_progress(job_id, state="error", message=str(e))
 
     threading.Thread(target=worker, daemon=True).start()
     return render_template("loading.html", job_id=job_id)
