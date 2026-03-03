@@ -1,0 +1,58 @@
+{% from "base.html" import head, header %}
+<!doctype html>
+<html lang="en">
+<head>
+  {{ head("Finding your vocab.db") }}
+</head>
+<body>
+<div class="container">
+  {{ header() }}
+  <div class="card">
+    <h1 class="page-title">How to find your vocab.db</h1>
+    <p class="page-subtitle">
+      When you look up a word while reading on your Kindle, it gets saved to a small
+      database file called vocab.db. Here's how to get it.
+    </p>
+
+    <h2 style="font-size:1.1rem; margin-top:1.5rem; margin-bottom:0.5rem;">Kindle e-reader</h2>
+    <p style="color:var(--ink-faint); font-size:0.88rem; margin-bottom:0.75rem;">Paperwhite, Oasis, Basic</p>
+    <ol style="margin-left:1.25rem; margin-bottom:1rem; line-height:1.8; font-size:0.92rem;">
+      <li>Connect your Kindle to your computer with a USB cable</li>
+      <li>It will appear as a drive in File Explorer (Windows) or Finder (Mac)</li>
+      <li>Open the Kindle drive and navigate to the <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">system</code> folder</li>
+      <li>Inside system, open the <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">vocabulary</code> folder</li>
+      <li>Copy <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">vocab.db</code> to your computer</li>
+    </ol>
+    <p style="font-size:0.88rem; color:var(--ink-light); margin-bottom:1.25rem;">
+      The full path is <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">Kindle/system/vocabulary/vocab.db</code>
+    </p>
+    <p style="font-size:0.85rem; color:var(--ink-faint); margin-bottom:1.5rem; padding:0.75rem; background:var(--paper-dark); border-radius:3px;">
+      The system folder may be hidden. On Windows, open File Explorer, click "View" in the toolbar,
+      and check "Hidden items." On Mac, press Cmd+Shift+. to show hidden files.
+    </p>
+
+    <hr class="divider">
+
+    <h2 style="font-size:1.1rem; margin-bottom:0.5rem;">Other platforms</h2>
+    <p style="font-size:0.92rem; line-height:1.7; margin-bottom:0.75rem;">
+      <span class="fw-semi">Kindle app (Android)</span> &mdash;
+      The vocab.db file is stored in the app's internal data, which is not accessible
+      without root access on most devices.
+    </p>
+    <p style="font-size:0.92rem; line-height:1.7; margin-bottom:0.75rem;">
+      <span class="fw-semi">Kindle app (iOS)</span> &mdash;
+      Apple does not allow access to app data directories, so vocab.db cannot be
+      retrieved from an iPhone or iPad.
+    </p>
+    <p style="font-size:0.92rem; line-height:1.7; margin-bottom:1.5rem;">
+      <span class="fw-semi">Kindle for PC / Mac</span> &mdash;
+      Desktop Kindle apps do not maintain a vocab.db file in the same way e-readers do.
+      The vocabulary builder data is stored in Amazon's cloud but is not accessible
+      as a local file.
+    </p>
+
+    <a href="/" class="btn--link" style="font-size:0.9rem;">Back to upload</a>
+  </div>
+</div>
+</body>
+</html>

@@ -52,6 +52,11 @@ def index():
     return render_template("index.html")
 
 
+@app.get("/help")
+def help_page():
+    return render_template("help.html")
+
+
 @app.post("/upload")
 def upload():
     f = request.files.get("vocabdb")
