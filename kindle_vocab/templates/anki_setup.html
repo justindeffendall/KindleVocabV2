@@ -74,6 +74,7 @@
     <p class="page-subtitle">
       Before importing your CSV, you need to create a note type in Anki with the
       right fields and card templates. This only needs to be done once.
+      If you don't have Anki yet, <a href="https://apps.ankiweb.net/" target="_blank" rel="noopener" style="color:var(--accent);text-underline-offset:2px;">download it here</a>.
     </p>
 
     <h2 style="font-size:1.1rem; margin-top:1.5rem; margin-bottom:1rem;">Create the note type</h2>
@@ -329,26 +330,42 @@
     <div class="step">
       <span class="step-num">1</span>
       <div class="step-content">
-        In Anki, go to <strong>File &gt; Import</strong> and select your downloaded CSV file
+        Create a new deck in Anki for your vocabulary (e.g. "Spanish Reading") by clicking
+        <strong>Create Deck</strong> at the bottom of the main screen
       </div>
     </div>
 
     <div class="step">
       <span class="step-num">2</span>
       <div class="step-content">
-        Set the <strong>Note Type</strong> to <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">Kindle Spanish Vocab</code>
+        Go to <strong>File &gt; Import</strong> and select your downloaded CSV file
       </div>
     </div>
 
     <div class="step">
       <span class="step-num">3</span>
       <div class="step-content">
-        Make sure <strong>Allow HTML in fields</strong> is checked (this preserves the word highlighting in your context sentences)
+        Set the <strong>Note Type</strong> to <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">Kindle Spanish Vocab</code>
+        and set the <strong>Deck</strong> to the deck you just created
       </div>
     </div>
 
     <div class="step">
       <span class="step-num">4</span>
+      <div class="step-content">
+        Change the <strong>Field Separator</strong> to <strong>Comma</strong>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">5</span>
+      <div class="step-content">
+        Make sure <strong>Allow HTML in fields</strong> is checked (this preserves the word highlighting in your context sentences)
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">6</span>
       <div class="step-content">
         Verify the field mapping matches: field 1 = word, field 2 = definition, field 3 = label,
         field 4 = book, field 5 = authors, field 6 = usage, field 7 = morphology. Ignore any
@@ -357,15 +374,12 @@
     </div>
 
     <div class="step">
-      <span class="step-num">5</span>
+      <span class="step-num">7</span>
       <div class="step-content">
         Click <strong>Import</strong>. Your cards are ready to study.
       </div>
     </div>
 
-    <div style="margin-top:1.5rem;">
-      <a href="/" class="btn--link" style="font-size:0.9rem;">Back to upload</a>
-    </div>
   </div>
 </div>
 <script>
