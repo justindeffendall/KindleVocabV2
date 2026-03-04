@@ -57,6 +57,11 @@ def help_page():
     return render_template("help.html")
 
 
+@app.get("/anki-setup")
+def anki_setup():
+    return render_template("anki_setup.html")
+
+
 @app.post("/upload")
 def upload():
     f = request.files.get("vocabdb")
