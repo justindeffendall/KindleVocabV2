@@ -1,7 +1,6 @@
 {% macro head(title="Kindle Vocab") %}
 <meta charset="utf-8">
 <title>{{ title }}</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -109,14 +108,14 @@
   .toggle-btn.active { background: var(--accent); color: var(--paper); }
   .toggle-btn:hover:not(.active) { background: var(--paper-dark); }
   .site-header { text-align: center; padding: 1rem 0 0.5rem; margin-bottom: 1rem; }
-  .site-name { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--ink-light); letter-spacing: 0.08em; text-transform: uppercase; }
+  .site-name { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--ink-light); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
   .site-rule { width: 60px; border: none; border-top: 2px solid var(--earth); margin: 0.5rem auto 0; }
 </style>
 {% endmacro %}
 
 {% macro header() %}
 <div class="site-header">
-  <div class="site-name">Kindle Spanish Vocab Builder</div>
+  <a href="/" class="site-name">Kindle Spanish Vocab Builder</a>
   <hr class="site-rule">
 </div>
 {% endmacro %}
