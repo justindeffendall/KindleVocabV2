@@ -16,14 +16,17 @@
       white-space: pre;
       color: var(--ink-light);
       margin-bottom: 1rem;
-      position: relative;
       max-height: 300px;
       overflow-y: auto;
     }
+    .code-wrap {
+      position: relative;
+      margin-bottom: 1rem;
+    }
     .copy-btn {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
+      position: sticky;
+      float: right;
+      top: 0;
       background: var(--earth-light);
       color: var(--ink);
       border: 1px solid var(--earth);
@@ -34,6 +37,8 @@
       font-weight: 500;
       cursor: pointer;
       transition: all 0.15s ease;
+      z-index: 2;
+      margin: 0.5rem;
     }
     .copy-btn:hover { background: var(--earth); }
     .step-num {
@@ -127,8 +132,7 @@
     </div>
 
     <div style="position:relative;">
-      <button class="copy-btn" onclick="copyBlock('front-code')">Copy</button>
-      <div class="code-block" id="front-code">{% raw %}&lt;div class="card-front"&gt;
+      <div class="code-block" id="front-code"><button class="copy-btn" onclick="copyBlock('front-code')">Copy</button>{% raw %}&lt;div class="card-front"&gt;
   &lt;div class="word"&gt;{{word}}&lt;/div&gt;
   &lt;div class="label"&gt;{{label}}&lt;/div&gt;
   &lt;div class="usage"&gt;{{usage}}&lt;/div&gt;
@@ -203,8 +207,7 @@
     </div>
 
     <div style="position:relative;">
-      <button class="copy-btn" onclick="copyBlock('back-code')">Copy</button>
-      <div class="code-block" id="back-code">{% raw %}&lt;div class="card-back"&gt;
+      <div class="code-block" id="back-code"><button class="copy-btn" onclick="copyBlock('back-code')">Copy</button>{% raw %}&lt;div class="card-back"&gt;
   &lt;div class="word-echo"&gt;{{word}}&lt;/div&gt;
   &lt;div class="label"&gt;{{label}}&lt;/div&gt;
   &lt;div class="divider-line"&gt;&lt;/div&gt;
@@ -385,15 +388,19 @@
 <script>
 function copyBlock(id) {
   var el = document.getElementById(id);
-  var text = el.textContent;
+  /* Clone and remove the button before extracting text */
+  var clone = el.cloneNode(true);
+  var btn = clone.querySelector('.copy-btn');
+  if (btn) btn.remove();
+  var text = clone.textContent;
   /* Decode HTML entities back to actual characters */
   var tmp = document.createElement('textarea');
   tmp.innerHTML = text;
-  text = tmp.value;
+  text = tmp.value.trim();
   navigator.clipboard.writeText(text).then(function() {
-    var btn = el.parentElement.querySelector('.copy-btn');
-    btn.textContent = 'Copied';
-    setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+    var origBtn = el.querySelector('.copy-btn');
+    origBtn.textContent = 'Copied';
+    setTimeout(function() { origBtn.textContent = 'Copy'; }, 1500);
   });
 }
 </script>
