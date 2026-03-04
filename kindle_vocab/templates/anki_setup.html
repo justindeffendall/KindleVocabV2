@@ -127,12 +127,12 @@
 
     <div style="position:relative;">
       <button class="copy-btn" onclick="copyBlock('front-code')">Copy</button>
-      <div class="code-block" id="front-code">&lt;div class="card-front"&gt;
+      <div class="code-block" id="front-code">{% raw %}&lt;div class="card-front"&gt;
   &lt;div class="word"&gt;{{word}}&lt;/div&gt;
   &lt;div class="label"&gt;{{label}}&lt;/div&gt;
   &lt;div class="usage"&gt;{{usage}}&lt;/div&gt;
   &lt;div class="book-info"&gt;{{book}}&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;{% endraw %}
 
 &lt;style&gt;
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@300;400;500;600&amp;display=swap');
@@ -203,7 +203,7 @@
 
     <div style="position:relative;">
       <button class="copy-btn" onclick="copyBlock('back-code')">Copy</button>
-      <div class="code-block" id="back-code">&lt;div class="card-back"&gt;
+      <div class="code-block" id="back-code">{% raw %}&lt;div class="card-back"&gt;
   &lt;div class="word-echo"&gt;{{word}}&lt;/div&gt;
   &lt;div class="label"&gt;{{label}}&lt;/div&gt;
   &lt;div class="divider-line"&gt;&lt;/div&gt;
@@ -217,7 +217,7 @@
     &lt;span class="book"&gt;{{book}}&lt;/span&gt;
     &lt;span class="author"&gt;{{authors}}&lt;/span&gt;
   &lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;{% endraw %}
 
 &lt;style&gt;
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@300;400;500;600&amp;display=swap');
