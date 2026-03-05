@@ -484,42 +484,72 @@ def resolve_ambiguity(
       1. Score each match by how many Stanza features it agrees with
          (Mood, Tense, Person, Number).
       2. If exactly one match has the highest score, pick it.
-      3. Otherwise unresolvable → None (routes to incomplete).
+      3. If all matches agree on mood, tense, verbform, and number but differ
+         only in person, return a person-less synthetic match — the form is
+         unambiguously identified, only the person is uncertain.
+         Example: "hablara" → Subjunctive, Imperfect, singular (1st/3rd).
+      4. Otherwise unresolvable → None (routes to incomplete).
     """
     if len(matches) <= 1:
         return (matches[0] if matches else None), "unique"
 
+    # ── Step 1 & 2: score against Stanza features ──
+    if stanza_feats:
+        sf: Dict[str, str] = {}
+        for part in stanza_feats.split("|"):
+            if "=" in part:
+                k, v = part.split("=", 1)
+                sf[k] = v
+
+        def score(m: ConjMatch) -> int:
+            s = 0
+            if m.mood   and sf.get("Mood")   == m.mood:   s += 1
+            if m.tense  and sf.get("Tense")  == m.tense:  s += 1
+            if m.person and sf.get("Person") == m.person: s += 1
+            if m.number and sf.get("Number") == m.number: s += 1
+            return s
+
+        scored = [(score(m), m) for m in matches]
+        best_score = max(s for s, _ in scored)
+
+        if best_score > 0:
+            winners = [m for s, m in scored if s == best_score]
+            if len(winners) == 1:
+                return winners[0], f"resolved_by_stanza(score={best_score})"
+
+    # ── Step 3: person-only ambiguity ──
+    # If all matches share mood, tense, verbform, and number but differ only
+    # in person, return a synthetic person-less match rather than failing.
+    # The form is unambiguously identified — only person is unknown.
+    moods   = {m.mood     for m in matches}
+    tenses  = {m.tense    for m in matches}
+    numbers = {m.number   for m in matches}
+    vforms  = {m.verbform for m in matches}
+    persons = {m.person   for m in matches}
+
+    if (
+        len(moods)   == 1
+        and len(tenses)  == 1
+        and len(numbers) == 1
+        and len(vforms)  == 1
+        and len(persons) > 1   # multiple persons, everything else identical
+    ):
+        representative = matches[0]
+        person_labels = "/".join(sorted(p for p in persons if p))
+        synthetic = ConjMatch(
+            mood=representative.mood,
+            tense=representative.tense,
+            person="",          # omitted — ambiguous between persons
+            number=representative.number,
+            verbform=representative.verbform,
+        )
+        return synthetic, f"person_ambiguous({person_labels})"
+
+    # ── Step 4: unresolvable ──
     if not stanza_feats:
         return None, f"unresolved_no_feats({len(matches)}_matches)"
 
-    # Parse Stanza features into a dict
-    sf: Dict[str, str] = {}
-    for part in stanza_feats.split("|"):
-        if "=" in part:
-            k, v = part.split("=", 1)
-            sf[k] = v
-
-    # Map our ConjMatch fields to UD feature names
-    def score(m: ConjMatch) -> int:
-        s = 0
-        if m.mood and sf.get("Mood") == m.mood: s += 1
-        if m.tense and sf.get("Tense") == m.tense: s += 1
-        if m.person and sf.get("Person") == m.person: s += 1
-        if m.number and sf.get("Number") == m.number: s += 1
-        return s
-
-    scored = [(score(m), m) for m in matches]
-    best_score = max(s for s, _ in scored)
-
-    if best_score == 0:
-        return None, f"unresolved_no_overlap({len(matches)}_matches)"
-
-    winners = [m for s, m in scored if s == best_score]
-
-    if len(winners) == 1:
-        return winners[0], f"resolved_by_stanza(score={best_score})"
-
-    return None, f"unresolved_tied({len(winners)}_at_score_{best_score})"
+    return None, f"unresolved_tied({len(matches)}_matches)"
 
 
 def dump_table_sample(stem: str) -> Dict[str, Any]:
