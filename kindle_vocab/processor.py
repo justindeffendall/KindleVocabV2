@@ -116,7 +116,6 @@ def _is_finite_morphology(morphology: str) -> bool:
     finite_moods = ("Indicative", "Subjunctive", "Conditional", "Imperative")
     return any(morphology.startswith(m) for m in finite_moods)
 
-
 def process_record(
     rec: Dict[str, Any],
     mw_result: Dict[str, Any],
@@ -140,16 +139,12 @@ def process_record(
     shortdefs = mw_result.get("shortdefs", [])
     label = mw_result.get("label", "")
     mw_exact = mw_result.get("exact_match", False)
-    is_mente_fallback = bool(mw_result.get("mente_fallback"))
-    mente_root = mw_result.get("mente_root", "")
     definition = " | ".join(shortdefs)
 
     flog.sub("MW")
     flog.kv("label", repr(label))
     flog.kv("exact_match", mw_exact)
     flog.kv("defs", len(shortdefs))
-    if is_mente_fallback:
-        flog.kv("mente_fallback", f"root={mente_root!r}")
 
     # ── Stanza tokenization ──
     flog.sub("Tokenization")
@@ -232,40 +227,22 @@ def process_record(
         reasons.append("ACCENT_LOOSE_MATCH")
 
     if found and label:
-        if is_mente_fallback:
-            # The MW entry is for the adjective root, but label has been forced
-            # to "adverb".  Standard _pos_ok would flag ADJ vs ADV as a mismatch.
-            # Instead we confirm directly that Stanza tagged the token as ADV in
-            # the sentence — that is the real validation that the word is
-            # functioning as an adverb.  Any other Stanza tag means the sentence
-            # context is ambiguous or the fallback misfired; send to incomplete.
-            if s_upos == "ADV":
-                flog.bullet(
-                    f"mente_fallback POS confirmed: stanza=ADV "
-                    f"(root={mente_root!r})"
-                )
-            else:
-                reasons.append(f"MENTE_FALLBACK_POS_MISMATCH(upos={s_upos})")
-                flog.bullet(
-                    f"mente_fallback POS FAILED: expected ADV, got {s_upos!r}"
-                )
+        ok, msg = _pos_ok(label, s_upos, s_feats)
+        if not ok:
+            reasons.append(msg)
+        elif msg == "POS_OK_ROLE_SHIFT":
+            usage_pos = _compute_usage_pos(label, s_upos)
+            # A finite conjugated form cannot simultaneously be a role shift —
+            # if the conjugation table already identified this as a finite verb
+            # form, Stanza's NOUN/ADJ tag is a mis-tag (common with pro-drop
+            # sentences like "Repto por el suelo"). Trust the conjugation table.
+            if usage_pos and _is_finite_morphology(morphology):
+                flog.bullet(f"Role shift suppressed: morphology={morphology!r} overrides upos={s_upos!r}")
+                usage_pos = ""
+            elif usage_pos:
+                flog.bullet(f"Role shift confirmed: {usage_pos} (upos={s_upos!r})")
         else:
-            ok, msg = _pos_ok(label, s_upos, s_feats)
-            if not ok:
-                reasons.append(msg)
-            elif msg == "POS_OK_ROLE_SHIFT":
-                usage_pos = _compute_usage_pos(label, s_upos)
-                # A finite conjugated form cannot simultaneously be a role shift —
-                # if the conjugation table already identified this as a finite verb
-                # form, Stanza's NOUN/ADJ tag is a mis-tag (common with pro-drop
-                # sentences like "Repto por el suelo"). Trust the conjugation table.
-                if usage_pos and _is_finite_morphology(morphology):
-                    flog.bullet(f"Role shift suppressed: morphology={morphology!r} overrides upos={s_upos!r}")
-                    usage_pos = ""
-                elif usage_pos:
-                    flog.bullet(f"Role shift confirmed: {usage_pos} (upos={s_upos!r})")
-            else:
-                flog.bullet(f"No role shift (label={label!r}, upos={s_upos!r})")
+            flog.bullet(f"No role shift (label={label!r}, upos={s_upos!r})")
     elif not found or not label:
         reasons.append("POS_SKIP")
 
@@ -276,10 +253,6 @@ def process_record(
     flog.kv("decision", "COMPLETE" if complete else "INCOMPLETE")
     if reasons:
         flog.bullets([f"FAIL: {r}" for r in reasons])
-
-    # morphology_source notes the fallback root so it is visible in the CSV.
-    if is_mente_fallback and complete:
-        morph_source = f"mente_fallback:{mente_root}"
 
     return {
         "word": stem,
@@ -311,20 +284,6 @@ def _humanize(code: str) -> str:
         return "Accent mismatch between word and sentence"
 
     import re
-
-    m = re.match(r"MENTE_FALLBACK_POS_MISMATCH\(upos=(\w*)\)", code)
-    if m:
-        upos = m.group(1)
-        if upos:
-            upos_names = {
-                "NOUN": "noun", "VERB": "verb", "ADJ": "adjective",
-                "ADV": "adverb", "DET": "determiner", "PRON": "pronoun",
-                "ADP": "preposition", "CCONJ": "conjunction", "SCONJ": "conjunction",
-                "PROPN": "proper noun", "INTJ": "interjection", "NUM": "numeral",
-            }
-            ctx = upos_names.get(upos, upos.lower())
-            return f"Expected adverb in context but found \"{ctx}\""
-        return "Adverb not confirmed in context"
 
     m = re.match(r"POS_MISMATCH\(MW=(\w+),upos=(\w+)\)", code)
     if m:
