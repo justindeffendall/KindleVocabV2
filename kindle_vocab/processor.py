@@ -28,17 +28,30 @@ _MW_TO_UPOS: Dict[str, Set[str]] = {
     "interjection": {"INTJ"},
 }
 
-# Human-readable labels for Stanza UPOS tags when a verb/participle is used
-# in a different syntactic role in the sentence.
-_UPOS_USAGE_LABEL: Dict[str, str] = {
-    "ADJ":   "used as adjective",
-    "NOUN":  "used as noun",
-    "ADV":   "used as adverb",
-    "DET":   "used as determiner",
-    "PROPN": "used as proper noun",
+# Human-readable labels for when a word is used in a different syntactic role
+# in the sentence than its dictionary label suggests.
+# Keyed by (mw_label, stanza_upos) — only pairs that are grammatically
+# legitimate in Spanish and reliable enough to pass to complete.
+# Pairs absent from this dict are either expected (no shift) or genuinely
+# suspicious (kept as failures).
+_ROLE_SHIFT_LABEL: Dict[Tuple[str, str], str] = {
+    ("verb",       "ADJ"):  "used as adjective",
+    ("verb",       "NOUN"): "used as noun",
+    ("participle", "ADJ"):  "used as adjective",
+    ("participle", "NOUN"): "used as noun",
+    ("adjective",  "NOUN"): "used as noun",
 }
-# VERB and AUX are intentionally absent — if it's being used as a verb,
-# the morphology field already describes the form correctly.
+
+
+def _compute_usage_pos(label: str, upos: str) -> str:
+    """
+    Return a human-readable string describing how the word is actually being
+    used in the sentence, but only when that role differs from its expected one.
+    Returns an empty string when the word is in its normal role.
+    """
+    lbl = (label or "").lower()
+    up = (upos or "").upper()
+    return _ROLE_SHIFT_LABEL.get((lbl, up), "")
 
 
 def _pos_ok(mw_label: str, upos: str, feats: str) -> Tuple[bool, str]:
@@ -53,12 +66,30 @@ def _pos_ok(mw_label: str, upos: str, feats: str) -> Tuple[bool, str]:
     if lbl == "verb":
         if up in {"VERB", "AUX"} or "VerbForm=" in ft:
             return True, "POS_OK"
+        # Verb functioning as adjective (past participle agreeing with noun,
+        # e.g. "grapadas") or as noun (infinitive as subject/object,
+        # e.g. "el comer") — both are grammatically legitimate in Spanish.
+        # usage_pos will surface how the word is actually being used on the card.
+        if up in {"ADJ", "NOUN"}:
+            return True, "POS_OK_ROLE_SHIFT"
         return False, f"POS_MISMATCH(MW=verb,upos={up})"
 
     if lbl == "participle":
         if "VerbForm=Part" in ft:
             return True, "POS_OK"
+        # Participle used as adjective (most common case) or noun.
+        if up in {"ADJ", "NOUN"}:
+            return True, "POS_OK_ROLE_SHIFT"
         return False, f"POS_MISMATCH(MW=participle,no_VerbForm=Part)"
+
+    if lbl == "adjective":
+        if up == "ADJ":
+            return True, "POS_OK"
+        # Adjective functioning as noun (nominalisation), e.g. "los pobres",
+        # "el herido" — very common in Spanish, Stanza is reliable on this.
+        if up == "NOUN":
+            return True, "POS_OK_ROLE_SHIFT"
+        return False, f"POS_MISMATCH(MW={lbl},upos={up})"
 
     if up in allowed:
         return True, "POS_OK"
@@ -67,23 +98,6 @@ def _pos_ok(mw_label: str, upos: str, feats: str) -> Tuple[bool, str]:
 
 def _is_verb_label(label: str) -> bool:
     return "verb" in (label or "").lower() or "participle" in (label or "").lower()
-
-
-def _compute_usage_pos(label: str, upos: str, feats: str) -> str:
-    """
-    For verb/participle stems, return a human-readable string describing how
-    the word is actually being used in the sentence — but only when that role
-    differs from a straightforward verbal use.
-
-    Returns an empty string when:
-      - the word is not a verb/participle (caller should not pass those)
-      - the word is being used as a verb or auxiliary (morphology covers this)
-      - upos is unknown or empty
-    """
-    if not _is_verb_label(label):
-        return ""
-    up = (upos or "").upper()
-    return _UPOS_USAGE_LABEL.get(up, "")
 
 
 # ── Main processor ───────────────────────────────────────────────────────────
@@ -179,16 +193,17 @@ def process_record(
         flog.bullet(f"SKIP: {'not verb/participle' if not _is_verb_label(label) else 'stem not infinitive'}")
 
     # ── Usage POS (how the word functions in the sentence) ──
+    # Runs for verbs, participles, and adjectives — any label that can shift role.
     flog.sub("Usage POS")
     usage_pos = ""
-    if is_verb and found:
-        usage_pos = _compute_usage_pos(label, s_upos, s_feats)
+    if found and label:
+        usage_pos = _compute_usage_pos(label, s_upos)
         if usage_pos:
-            flog.bullet(f"Sentence role differs: {usage_pos} (upos={s_upos!r})")
+            flog.bullet(f"Role shift detected: {usage_pos} (upos={s_upos!r})")
         else:
-            flog.bullet(f"Sentence role: verbal (upos={s_upos!r})")
+            flog.bullet(f"No role shift (label={label!r}, upos={s_upos!r})")
     else:
-        flog.bullet("SKIP: not verb/participle or token not found")
+        flog.bullet("SKIP: token not found or no label")
 
     # ── Highlight ──
     usage_out = highlight_word(usage, original, HIGHLIGHT_STYLE)
