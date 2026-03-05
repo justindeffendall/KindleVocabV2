@@ -45,9 +45,10 @@ _ROLE_SHIFT_LABEL: Dict[Tuple[str, str], str] = {
 
 def _compute_usage_pos(label: str, upos: str) -> str:
     """
-    Return a human-readable string describing how the word is actually being
-    used in the sentence, but only when that role differs from its expected one.
-    Returns an empty string when the word is in its normal role.
+    Return a human-readable label for a confirmed role shift.
+    Only called when _pos_ok has already returned POS_OK_ROLE_SHIFT,
+    so the (label, upos) pair is guaranteed to be in _ROLE_SHIFT_LABEL.
+    Returns empty string as a safe fallback if somehow called incorrectly.
     """
     lbl = (label or "").lower()
     up = (upos or "").upper()
@@ -192,25 +193,16 @@ def process_record(
     else:
         flog.bullet(f"SKIP: {'not verb/participle' if not _is_verb_label(label) else 'stem not infinitive'}")
 
-    # ── Usage POS (how the word functions in the sentence) ──
-    # Runs for verbs, participles, and adjectives — any label that can shift role.
-    flog.sub("Usage POS")
-    usage_pos = ""
-    if found and label:
-        usage_pos = _compute_usage_pos(label, s_upos)
-        if usage_pos:
-            flog.bullet(f"Role shift detected: {usage_pos} (upos={s_upos!r})")
-        else:
-            flog.bullet(f"No role shift (label={label!r}, upos={s_upos!r})")
-    else:
-        flog.bullet("SKIP: token not found or no label")
-
     # ── Highlight ──
     usage_out = highlight_word(usage, original, HIGHLIGHT_STYLE)
 
-    # ── Validation ──
+    # ── Validation + Usage POS ──
+    # _pos_ok is the single source of truth for whether a role shift occurred.
+    # usage_pos is only set when _pos_ok explicitly returns POS_OK_ROLE_SHIFT,
+    # preventing false positives from Stanza mis-tagging sentence-initial verbs.
     flog.sub("Validation")
     reasons: List[str] = []
+    usage_pos = ""
 
     if not definition:
         reasons.append("DEF_MISSING")
@@ -225,6 +217,11 @@ def process_record(
         ok, msg = _pos_ok(label, s_upos, s_feats)
         if not ok:
             reasons.append(msg)
+        elif msg == "POS_OK_ROLE_SHIFT":
+            usage_pos = _compute_usage_pos(label, s_upos)
+            flog.bullet(f"Role shift confirmed: {usage_pos} (upos={s_upos!r})")
+        else:
+            flog.bullet(f"No role shift (label={label!r}, upos={s_upos!r})")
     elif not found or not label:
         reasons.append("POS_SKIP")
 
