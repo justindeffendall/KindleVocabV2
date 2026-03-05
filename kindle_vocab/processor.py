@@ -103,6 +103,19 @@ def _is_verb_label(label: str) -> bool:
 
 # ── Main processor ───────────────────────────────────────────────────────────
 
+def _is_finite_morphology(morphology: str) -> bool:
+    """
+    Return True if the morphology string describes a finite verb form
+    (Indicative, Subjunctive, Conditional, Imperative).
+    Infinitive, Gerund, and Participle are non-finite and can legitimately
+    shift role — a participle can be an adjective, an infinitive can be a noun.
+    An empty morphology (non-verb) also returns False.
+    """
+    if not morphology:
+        return False
+    finite_moods = ("Indicative", "Subjunctive", "Conditional", "Imperative")
+    return any(morphology.startswith(m) for m in finite_moods)
+
 def process_record(
     rec: Dict[str, Any],
     mw_result: Dict[str, Any],
@@ -219,7 +232,15 @@ def process_record(
             reasons.append(msg)
         elif msg == "POS_OK_ROLE_SHIFT":
             usage_pos = _compute_usage_pos(label, s_upos)
-            flog.bullet(f"Role shift confirmed: {usage_pos} (upos={s_upos!r})")
+            # A finite conjugated form cannot simultaneously be a role shift —
+            # if the conjugation table already identified this as a finite verb
+            # form, Stanza's NOUN/ADJ tag is a mis-tag (common with pro-drop
+            # sentences like "Repto por el suelo"). Trust the conjugation table.
+            if usage_pos and _is_finite_morphology(morphology):
+                flog.bullet(f"Role shift suppressed: morphology={morphology!r} overrides upos={s_upos!r}")
+                usage_pos = ""
+            elif usage_pos:
+                flog.bullet(f"Role shift confirmed: {usage_pos} (upos={s_upos!r})")
         else:
             flog.bullet(f"No role shift (label={label!r}, upos={s_upos!r})")
     elif not found or not label:
