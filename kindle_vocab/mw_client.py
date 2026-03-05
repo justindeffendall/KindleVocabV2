@@ -117,6 +117,75 @@ def _lookup_one(stem: str, session: requests.Session) -> Dict[str, Any]:
     return result
 
 
+# ── -mente adverb fallback ───────────────────────────────────────────────────
+
+# Spanish -mente adverbs are formed by appending -mente to the feminine
+# singular form of an adjective (e.g. "atropellada" → "atropelladamente").
+# MW often carries the adverb directly for common words, but omits rarer ones.
+# When MW has no direct match for a -mente stem, we try the adjective root.
+#
+# Guards that prevent incorrect cards:
+#   1. Root must be >= 4 chars — rules out coincidental -mente endings
+#      ("demente" → "de", "clemente" → "cle", "elemento" → "ele").
+#   2. MW must return an exact match for the adjective root.
+#   3. MW's label for the root must be "adjective" — we never repackage a
+#      verb or noun definition as an adverb.
+#   4. The result carries mente_fallback=True so processor.py can apply the
+#      correct POS check (Stanza ADV confirmation) instead of the standard
+#      adjective/adverb mismatch that _pos_ok would otherwise flag.
+
+_MENTE_MIN_ROOT_LEN = 4
+
+
+def mente_fallback(stem: str, session: requests.Session) -> Optional[Dict[str, Any]]:
+    """
+    For a -mente adverb stem that MW doesn't carry directly, look up the
+    adjective root and repackage the result as an adverb definition.
+
+    Returns a result dict (same shape as _lookup_one) with:
+        exact_match    = True
+        label          = "adverb"   (always, regardless of MW's adj label)
+        mente_fallback = True       (signals processor to use ADV POS check)
+        mente_root     = str        (the adjective root that was found, for logging)
+
+    Returns None if the stem doesn't qualify or no adjective root is found in MW.
+    """
+    s = nfc(stem).casefold()
+    if not s.endswith("mente"):
+        return None
+
+    root = s[:-5]  # strip "mente"
+    if len(root) < _MENTE_MIN_ROOT_LEN:
+        return None
+
+    # -mente adverbs are formed from the feminine adjective form.
+    # Try the root as-is first (covers invariable adjectives like "irremisible",
+    # "inquietante", "simple"), then try swapping terminal -a → -o (covers
+    # gendered adjectives like "atropellada" → "atropellado").
+    candidates = [root]
+    if root.endswith("a"):
+        candidates.append(root[:-1] + "o")
+
+    for candidate in candidates:
+        res = _lookup_one(candidate, session)
+        if not res.get("exact_match"):
+            continue
+        if res.get("label") != "adjective":
+            # Only repackage adjective entries as adverbs.  If MW labels the
+            # root as a verb or noun the derivation is unreliable — skip it.
+            continue
+        return {
+            "shortdefs": res["shortdefs"],
+            "label": "adverb",
+            "exact_match": True,
+            "error": None,
+            "mente_fallback": True,
+            "mente_root": candidate,
+        }
+
+    return None
+
+
 # ── Batch lookup with disk cache ─────────────────────────────────────────────
 
 class MWClient:
@@ -172,11 +241,29 @@ class MWClient:
                 cached += 1
             else:
                 res = self.lookup(stem)
-                results[stem] = res
                 fetched += 1
-                status = "ERROR" if res["error"] else (
-                    "no match" if not res["exact_match"]
-                    else f"{len(res['shortdefs'])} defs"
+
+                # -mente fallback: if MW has no direct match and the stem looks
+                # like a -mente adverb, attempt the adjective root instead.
+                # The fallback result is NOT written to the cache under the
+                # adverb stem — the adjective root was already cached by
+                # _lookup_one inside mente_fallback, and we want the adverb
+                # stem to remain a miss in the cache so future runs re-attempt
+                # it (in case MW adds the word later).
+                if not res.get("exact_match") and nfc(stem).casefold().endswith("mente"):
+                    fallback = mente_fallback(stem, self._session)
+                    if fallback:
+                        res = fallback
+
+                results[stem] = res
+                status = "ERROR" if res.get("error") else (
+                    "no match" if not res.get("exact_match")
+                    else (
+                        f"mente_fallback({res.get('mente_root')}) "
+                        f"{len(res['shortdefs'])} defs"
+                        if res.get("mente_fallback")
+                        else f"{len(res['shortdefs'])} defs"
+                    )
                 )
                 flog.bullet(f"[{i}/{len(unique)}] {stem!r} — {status}")
 
