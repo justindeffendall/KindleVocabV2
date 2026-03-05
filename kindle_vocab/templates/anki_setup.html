@@ -103,7 +103,7 @@
       <span class="step-num">3</span>
       <div class="step-content">
         Select your new note type and click <strong>Fields</strong>. Delete the default
-        "Front" and "Back" fields, then add these seven fields in order:
+        "Front" and "Back" fields, then add these eight fields in order:
         <div class="field-list" style="margin-top:0.5rem;">
           word<br>
           definition<br>
@@ -111,7 +111,8 @@
           book<br>
           authors<br>
           usage<br>
-          morphology
+          morphology<br>
+          usage_pos
         </div>
       </div>
     </div>
@@ -212,9 +213,14 @@
   &lt;div class="label"&gt;{{label}}&lt;/div&gt;
   &lt;div class="divider-line"&gt;&lt;/div&gt;
   &lt;div class="definition"&gt;{{definition}}&lt;/div&gt;
+  {{#usage_pos}}
+  &lt;div class="morphology morphology--context"&gt;{{usage_pos}}&lt;/div&gt;
+  {{/usage_pos}}
+  {{^usage_pos}}
   {{#morphology}}
   &lt;div class="morphology"&gt;{{morphology}}&lt;/div&gt;
   {{/morphology}}
+  {{/usage_pos}}
   &lt;div class="divider-line" style="margin-top:1.5rem;"&gt;&lt;/div&gt;
   &lt;div class="usage"&gt;{{usage}}&lt;/div&gt;
   &lt;div class="meta"&gt;
@@ -287,6 +293,11 @@
   border-radius: 3px;
   margin-top: 0.4rem;
   letter-spacing: 0.01em;
+}
+
+.morphology--context {
+  color: #2d6a4f;
+  background: rgba(45, 106, 79, 0.08);
 }
 
 .usage {
@@ -371,8 +382,8 @@
       <span class="step-num">6</span>
       <div class="step-content">
         Verify the field mapping matches: field 1 = word, field 2 = definition, field 3 = label,
-        field 4 = book, field 5 = authors, field 6 = usage, field 7 = morphology. Ignore any
-        extra columns (morphology_source, status, fail_reasons).
+        field 4 = book, field 5 = authors, field 6 = usage, field 7 = morphology, field 8 = usage_pos.
+        Ignore any extra columns (morphology_source, status, fail_reasons).
       </div>
     </div>
 

@@ -28,6 +28,18 @@ _MW_TO_UPOS: Dict[str, Set[str]] = {
     "interjection": {"INTJ"},
 }
 
+# Human-readable labels for Stanza UPOS tags when a verb/participle is used
+# in a different syntactic role in the sentence.
+_UPOS_USAGE_LABEL: Dict[str, str] = {
+    "ADJ":   "used as adjective",
+    "NOUN":  "used as noun",
+    "ADV":   "used as adverb",
+    "DET":   "used as determiner",
+    "PROPN": "used as proper noun",
+}
+# VERB and AUX are intentionally absent — if it's being used as a verb,
+# the morphology field already describes the form correctly.
+
 
 def _pos_ok(mw_label: str, upos: str, feats: str) -> Tuple[bool, str]:
     lbl = (mw_label or "").lower()
@@ -55,6 +67,23 @@ def _pos_ok(mw_label: str, upos: str, feats: str) -> Tuple[bool, str]:
 
 def _is_verb_label(label: str) -> bool:
     return "verb" in (label or "").lower() or "participle" in (label or "").lower()
+
+
+def _compute_usage_pos(label: str, upos: str, feats: str) -> str:
+    """
+    For verb/participle stems, return a human-readable string describing how
+    the word is actually being used in the sentence — but only when that role
+    differs from a straightforward verbal use.
+
+    Returns an empty string when:
+      - the word is not a verb/participle (caller should not pass those)
+      - the word is being used as a verb or auxiliary (morphology covers this)
+      - upos is unknown or empty
+    """
+    if not _is_verb_label(label):
+        return ""
+    up = (upos or "").upper()
+    return _UPOS_USAGE_LABEL.get(up, "")
 
 
 # ── Main processor ───────────────────────────────────────────────────────────
@@ -149,6 +178,18 @@ def process_record(
     else:
         flog.bullet(f"SKIP: {'not verb/participle' if not _is_verb_label(label) else 'stem not infinitive'}")
 
+    # ── Usage POS (how the word functions in the sentence) ──
+    flog.sub("Usage POS")
+    usage_pos = ""
+    if is_verb and found:
+        usage_pos = _compute_usage_pos(label, s_upos, s_feats)
+        if usage_pos:
+            flog.bullet(f"Sentence role differs: {usage_pos} (upos={s_upos!r})")
+        else:
+            flog.bullet(f"Sentence role: verbal (upos={s_upos!r})")
+    else:
+        flog.bullet("SKIP: not verb/participle or token not found")
+
     # ── Highlight ──
     usage_out = highlight_word(usage, original, HIGHLIGHT_STYLE)
 
@@ -188,6 +229,7 @@ def process_record(
         "authors": rec["authors"],
         "usage": usage_out,
         "morphology": morphology,
+        "usage_pos": usage_pos,
         "morphology_source": morph_source,
         "status": "COMPLETE" if complete else "INCOMPLETE",
         "fail_reasons": " ; ".join(_humanize(r) for r in reasons),

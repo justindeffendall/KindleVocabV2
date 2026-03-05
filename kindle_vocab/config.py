@@ -40,6 +40,7 @@ CSV_COLUMNS = [
     "authors",
     "usage",
     "morphology",
+    "usage_pos",
     "morphology_source",
     "status",
     "fail_reasons",
