@@ -337,6 +337,18 @@
     line-height: 2;
   }
 
+  /* ── Example card grid ── */
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: stretch; }
+
+  /* ── Mobile ── */
+  @media (max-width: 540px) {
+    .container { padding: 0 1rem 2.5rem; }
+    .card { padding: 1.5rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .data-table td { max-width: 160px; }
+    .table-footer { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  }
+
   /* ── Site header ── */
   .site-header {
     text-align: center;
