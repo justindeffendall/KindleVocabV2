@@ -1,53 +1,47 @@
 {% from "base.html" import head, header, flashes %}
 <!doctype html>
 <html lang="en">
-<head>
-  {{ head("Select Vocabulary") }}
-</head>
+<head>{{ head("Select Vocabulary") }}</head>
 <body>
 <div class="container">
   {{ header() }}
   <div class="card">
     <h1 class="page-title">Select vocabulary to process</h1>
-    <p class="page-subtitle">
-      Your database contains
-      <span class="fw-semi">{{ books|length }}</span> book{{ 's' if books|length != 1 }}
-      with Spanish lookups.
-    </p>
+    <p class="page-subtitle">Your database contains <span class="fw-semi">{{ books|length }}</span> book{{ 's' if books|length != 1 }} with Spanish lookups.</p>
     {{ flashes() }}
 
     <form method="post" action="/select/{{ job_id }}">
       <div style="margin-bottom:1.5rem;">
-        <div class="fw-semi text-small" style="margin-bottom:0.5rem;">Filter mode</div>
-        <div class="form-option">
-          <input type="radio" name="mode" value="all" id="mode_all" checked onchange="toggleMode()">
-          <label for="mode_all">Everything</label>
-        </div>
-        <div class="form-option">
-          <input type="radio" name="mode" value="by_book" id="mode_book" onchange="toggleMode()">
-          <label for="mode_book">Select by book</label>
-        </div>
-        <div class="form-option">
-          <input type="radio" name="mode" value="by_author" id="mode_author" onchange="toggleMode()">
-          <label for="mode_author">Select by author</label>
+        <div style="font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:0.75rem;">Filter mode</div>
+        <div style="background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem 0.75rem 0.15rem;">
+          <div class="form-option">
+            <input type="radio" name="mode" value="all" id="mode_all" checked onchange="toggleMode()">
+            <label for="mode_all">Everything</label>
+          </div>
+          <div class="form-option">
+            <input type="radio" name="mode" value="by_book" id="mode_book" onchange="toggleMode()">
+            <label for="mode_book">Select by book</label>
+          </div>
+          <div class="form-option">
+            <input type="radio" name="mode" value="by_author" id="mode_author" onchange="toggleMode()">
+            <label for="mode_author">Select by author</label>
+          </div>
         </div>
       </div>
 
       <div id="section_all" class="mode-section">
-        <p class="muted text-small">
-          All {{ books|sum(attribute='lookup_count') }} lookups across {{ books|length }} books will be processed.
-        </p>
+        <p class="muted text-small">All {{ books|sum(attribute='lookup_count') }} lookups across {{ books|length }} books will be processed.</p>
       </div>
 
       <div id="section_by_book" class="mode-section" style="display:none;">
-        <p class="muted text-small" style="margin-bottom:0.5rem;">Select the books you want vocabulary from:</p>
+        <p class="text-small" style="color:var(--ink-2);margin-bottom:0.6rem;">Select the books you want vocabulary from:</p>
         <div class="scroll-box">
           {% for b in books %}
           <div class="form-option">
             <input type="checkbox" name="books" value="{{ b.book_ids|join(',') }}" id="book_{{ loop.index }}">
             <label for="book_{{ loop.index }}">
               <span class="fw-semi">{{ b.title }}</span>
-              <span class="muted">by {{ b.authors }}</span>
+              <span class="muted"> by {{ b.authors }}</span>
               <span class="badge">{{ b.lookup_count }}</span>
             </label>
           </div>
@@ -56,7 +50,7 @@
       </div>
 
       <div id="section_by_author" class="mode-section" style="display:none;">
-        <p class="muted text-small" style="margin-bottom:0.5rem;">Select the authors you want vocabulary from:</p>
+        <p class="text-small" style="color:var(--ink-2);margin-bottom:0.6rem;">Select the authors you want vocabulary from:</p>
         <div class="scroll-box">
           {% set ns = namespace(seen=[]) %}
           {% for b in books %}
@@ -71,7 +65,7 @@
         </div>
       </div>
 
-      <div style="margin-top:1.5rem; display:flex; align-items:center; gap:1rem;">
+      <div style="margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:1rem;">
         <button type="submit" class="btn btn--primary">Process selected</button>
         <a href="/" class="btn--link">Start over</a>
       </div>
@@ -82,8 +76,7 @@
 function toggleMode() {
   document.querySelectorAll('.mode-section').forEach(function(s) { s.style.display = 'none'; });
   var mode = document.querySelector('input[name="mode"]:checked').value;
-  var id = mode === 'all' ? 'section_all' : 'section_' + mode;
-  document.getElementById(id).style.display = 'block';
+  document.getElementById(mode === 'all' ? 'section_all' : 'section_' + mode).style.display = 'block';
 }
 </script>
 </body>

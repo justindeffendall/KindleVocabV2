@@ -1,19 +1,16 @@
 {% from "base.html" import head, header %}
 <!doctype html>
 <html lang="en">
-<head>
-  {{ head("Results") }}
-</head>
+<head>{{ head("Results") }}</head>
 <body>
 <div class="container container--wide">
   {{ header() }}
   <div class="card" style="padding:1.75rem;">
     <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
       <div>
-        <h1 class="page-title" style="margin-bottom:0.25rem;">Results</h1>
+        <h1 class="page-title" style="margin-bottom:0.2rem;">Results</h1>
         <p class="muted text-small">
-          <span class="fw-semi">{{ count }}</span> complete{% if meta.get('incomplete_rows') %},
-          <span class="fw-semi">{{ meta['incomplete_rows'] }}</span> incomplete{% endif %}
+          <span class="fw-semi" style="color:var(--ink-2);">{{ count }}</span> complete{% if meta.get('incomplete_rows') %},&ensp;<span class="fw-semi" style="color:var(--ink-2);">{{ meta['incomplete_rows'] }}</span> incomplete{% endif %}
         </p>
       </div>
       <div class="toggle-group">
@@ -27,7 +24,7 @@
     <div id="table-complete" class="data-table-wrap">
       <div class="data-table-scroll">
         <table class="data-table" id="tbl-complete">
-          <thead><tr><th>Loading...</th></tr></thead>
+          <thead><tr><th>Loading&hellip;</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -38,13 +35,13 @@
     </div>
 
     {% if incomplete_csv_name %}
-    <div id="incomplete-warning" style="display:none;margin-top:1rem;padding:0.75rem 1rem;background:#fdf6e3;border:1px solid #e6d5a0;border-radius:3px;font-size:0.85rem;color:#6b5210;">
+    <div id="incomplete-warning" class="alert alert--info" style="display:none;margin-top:1rem;">
       These entries could not be fully verified. Definitions, parts of speech, and verb forms may be inaccurate. Review each entry carefully before use.
     </div>
     <div id="table-incomplete" class="data-table-wrap" style="display:none;">
       <div class="data-table-scroll">
         <table class="data-table" id="tbl-incomplete">
-          <thead><tr><th>Loading...</th></tr></thead>
+          <thead><tr><th>Loading&hellip;</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -55,29 +52,29 @@
     </div>
     {% endif %}
 
-    <div style="margin-top:1.25rem; display:flex; align-items:center; justify-content:space-between;">
-      <div style="display:flex; gap:1rem; align-items:center;">
+    <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+      <div style="display:flex;gap:1.25rem;align-items:center;">
         <a href="/" class="btn--link">Process another</a>
-        <a href="/anki-setup" target="_blank" rel="noopener" class="btn--link" style="color:var(--ink-faint);">Setting up Anki</a>
+        <a href="/anki-setup" target="_blank" rel="noopener" class="btn--link" style="color:var(--ink-3);text-decoration-color:rgba(156,142,122,0.3);">Setting up Anki</a>
       </div>
-      <a href="https://buymeacoffee.com/kindlevocabbuilder" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--ink-faint);font-size:0.82rem;text-decoration:none;transition:color 0.15s;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+      <a href="https://buymeacoffee.com/kindlevocabbuilder" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--ink-3);font-size:0.82rem;text-decoration:none;transition:color var(--transition);" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--ink-3)'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
         Buy me a coffee
       </a>
     </div>
   </div>
 </div>
 <script>
-var COMPLETE_COLS = ['word','definition','label','book','morphology'];
+var COMPLETE_COLS   = ['word','definition','label','book','morphology'];
 var INCOMPLETE_COLS = ['word','definition','label','book','fail_reasons'];
 
 function showTable(which, btn) {
   document.querySelectorAll('.toggle-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
   document.getElementById('table-complete').style.display = which==='complete'?'':'none';
-  var inc = document.getElementById('table-incomplete');
-  if(inc) inc.style.display = which==='incomplete'?'':'none';
+  var inc  = document.getElementById('table-incomplete');
   var warn = document.getElementById('incomplete-warning');
+  if(inc)  inc.style.display  = which==='incomplete'?'':'none';
   if(warn) warn.style.display = which==='incomplete'?'':'none';
 }
 

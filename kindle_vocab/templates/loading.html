@@ -1,18 +1,17 @@
 {% from "base.html" import head, header %}
 <!doctype html>
 <html lang="en">
-<head>
-  {{ head("Processing") }}
-</head>
+<head>{{ head("Processing") }}</head>
 <body>
 <div class="container container--narrow">
   {{ header() }}
-  <div class="card" style="text-align:center;">
-    <h1 class="page-title">Processing your vocabulary</h1>
-    <p id="msg" class="page-subtitle">Starting...</p>
+  <div class="card" style="text-align:center;padding:3rem 2.5rem;">
+    <h1 class="page-title" style="margin-bottom:0.5rem;">Processing</h1>
+    <p id="msg" class="page-subtitle" style="margin-bottom:0;">Starting&hellip;</p>
     <div class="progress-track">
-      <div id="bar" class="progress-fill" style="width:0%;">0%</div>
+      <div id="bar" class="progress-fill" style="width:0%;"></div>
     </div>
+    <p id="pct" style="font-size:0.8rem;color:var(--ink-3);letter-spacing:0.03em;">0%</p>
   </div>
 </div>
 <script>
@@ -26,13 +25,13 @@
       }
       if (d.state === "error") {
         document.getElementById("msg").textContent = "Error: " + d.message;
-        document.getElementById("bar").style.background = "#8b3a3a";
+        document.getElementById("bar").style.background = "#7a2e2e";
         return;
       }
       var pct = d.total > 0 ? Math.round(100 * d.current / d.total) : 0;
       document.getElementById("bar").style.width = pct + "%";
-      document.getElementById("bar").textContent = pct + "%";
-      document.getElementById("msg").textContent = d.message || "Working...";
+      document.getElementById("pct").textContent = pct + "%";
+      document.getElementById("msg").textContent = d.message || "Working\u2026";
       setTimeout(poll, 1000);
     })
     .catch(function() { setTimeout(poll, 2000); });

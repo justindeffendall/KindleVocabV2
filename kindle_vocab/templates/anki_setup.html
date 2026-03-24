@@ -1,152 +1,41 @@
 {% from "base.html" import head, header %}
 <!doctype html>
 <html lang="en">
-<head>
-  {{ head("Setting up Anki") }}
-  <style>
-    .code-block {
-      background: var(--paper-dark);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 1rem;
-      font-family: monospace;
-      font-size: 0.78rem;
-      line-height: 1.5;
-      overflow-x: auto;
-      white-space: pre;
-      color: var(--ink-light);
-      margin-bottom: 1rem;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    .code-wrap {
-      position: relative;
-      margin-bottom: 1rem;
-    }
-    .copy-btn {
-      position: sticky;
-      float: right;
-      top: 0;
-      background: var(--earth-light);
-      color: var(--ink);
-      border: 1px solid var(--earth);
-      border-radius: 3px;
-      padding: 0.25rem 0.6rem;
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      z-index: 2;
-      margin: 0.5rem;
-    }
-    .copy-btn:hover { background: var(--earth); }
-    .step-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.6rem;
-      height: 1.6rem;
-      border-radius: 50%;
-      background: var(--accent);
-      color: var(--paper);
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-right: 0.5rem;
-      flex-shrink: 0;
-    }
-    .step {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 1rem;
-      font-size: 0.92rem;
-      line-height: 1.6;
-    }
-    .step-content { flex: 1; }
-    .field-list {
-      font-family: monospace;
-      font-size: 0.85rem;
-      color: var(--ink-light);
-      line-height: 2;
-    }
-  </style>
-</head>
+<head>{{ head("Setting up Anki") }}</head>
 <body>
 <div class="container">
   {{ header() }}
   <div class="card">
     <h1 class="page-title">Setting up Anki</h1>
     <p class="page-subtitle">
-      Before importing your CSV, you need to create a note type in Anki with the
-      right fields and card templates. This only needs to be done once.
-      If you don't have Anki yet, <a href="https://apps.ankiweb.net/" target="_blank" rel="noopener" style="color:var(--accent);text-underline-offset:2px;">download it here</a>.
+      Before importing your CSV, you need to create a note type in Anki with the right fields and card templates. This only needs to be done once.
+      If you don&rsquo;t have Anki yet, <a href="https://apps.ankiweb.net/" target="_blank" rel="noopener" style="color:var(--gold-dim);text-underline-offset:2px;">download it here</a>.
     </p>
 
-    <h2 style="font-size:1.1rem; margin-top:1.5rem; margin-bottom:1rem;">Create the note type</h2>
+    <h2 style="font-size:1.05rem;margin-bottom:1rem;">Create the note type</h2>
 
-    <div class="step">
-      <span class="step-num">1</span>
-      <div class="step-content">
-        Open Anki and go to <strong>Tools &gt; Manage Note Types</strong>
-      </div>
-    </div>
-
-    <div class="step">
-      <span class="step-num">2</span>
-      <div class="step-content">
-        Click <strong>Add</strong>, choose <strong>Add: Basic</strong>, and name it
-        <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">Kindle Spanish Vocab</code>
-      </div>
-    </div>
-
-    <div class="step">
-      <span class="step-num">3</span>
-      <div class="step-content">
-        Select your new note type and click <strong>Fields</strong>. Delete the default
-        "Front" and "Back" fields, then add these eight fields in order:
-        <div class="field-list" style="margin-top:0.5rem;">
-          word<br>
-          definition<br>
-          label<br>
-          book<br>
-          authors<br>
-          usage<br>
-          morphology<br>
-          usage_pos
-        </div>
-      </div>
-    </div>
-
-    <div class="step">
-      <span class="step-num">4</span>
-      <div class="step-content">
-        Click <strong>Save</strong> to close the Fields window, then click <strong>Cards</strong>
-        to open the template editor.
-      </div>
-    </div>
-
-    <div class="step">
-      <span class="step-num">5</span>
-      <div class="step-content">
-        Replace everything in the <strong>Front Template</strong> with the code below:
-      </div>
-    </div>
-
-    <div style="position:relative;">
-      <div class="code-block" id="front-code"><button class="copy-btn" onclick="copyBlock('front-code')">Copy</button>{% raw %}&lt;div class="card-front"&gt;
-  &lt;div class="word"&gt;{{word}}&lt;/div&gt;
-  &lt;div class="label"&gt;{{label}}&lt;/div&gt;
+    <ol style="margin-left:1.25rem;line-height:1.8;font-size:0.92rem;color:var(--ink-2);">
+      <li>Open Anki and go to <strong>Tools &gt; Manage Note Types</strong></li>
+      <li>Click <strong>Add</strong>, choose <strong>Add: Basic</strong>, and name it <code>Kindle Spanish Vocab</code></li>
+      <li>Select your new note type and click <strong>Fields</strong>. Delete the default &ldquo;Front&rdquo; and &ldquo;Back&rdquo; fields, then add these eight fields in order:
+        <div class="field-list" style="margin-top:0.5rem;">word<br>definition<br>label<br>book<br>authors<br>usage<br>morphology<br>usage_pos</div>
+      </li>
+      <li>Click <strong>Save</strong> to close the Fields window, then click <strong>Cards</strong> to open the template editor.</li>
+      <li>Replace everything in the <strong>Front Template</strong> with the code below:
+        <div style="margin-top:0.75rem;">
+          <div class="code-block" id="front-code"><button class="copy-btn" onclick="copyBlock('front-code')">Copy</button>{% raw %}&lt;div class="card-front"&gt;
   &lt;div class="usage"&gt;{{usage}}&lt;/div&gt;
-  &lt;div class="book-info"&gt;{{book}}&lt;/div&gt;
+  &lt;div class="label"&gt;{{label}}&lt;/div&gt;
+  &lt;div class="book-info"&gt;{{book}} &amp;mdash; {{authors}}&lt;/div&gt;
 &lt;/div&gt;{% endraw %}
 
 &lt;style&gt;
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@300;400;500;600&amp;display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@400;500&amp;display=swap');
 
 .card {
-  background: #f5f0e8;
-  font-family: 'Source Sans 3', Georgia, serif;
-  color: #2c2416;
+  background: #f7f2e9;
+  font-family: 'Inter', sans-serif;
+  color: #1e1a13;
   padding: 0;
   margin: 0;
   display: flex;
@@ -161,40 +50,31 @@
   padding: 2.5rem 2rem;
 }
 
-.word {
-  font-family: 'Libre Baskerville', Georgia, serif;
-  font-size: 2.6rem;
-  font-weight: 700;
-  color: #2c2416;
-  margin-bottom: 0.3rem;
-  letter-spacing: -0.02em;
-}
-
-.label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #9a8b78;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 1.75rem;
-}
-
 .usage {
   font-family: 'Libre Baskerville', Georgia, serif;
-  font-size: 0.92rem;
+  font-size: 1.1rem;
   font-style: italic;
-  color: #6b5d4d;
-  line-height: 1.7;
+  color: #1e1a13;
+  line-height: 1.8;
   margin-bottom: 1.5rem;
   padding: 0 0.5rem;
 }
 
-.book-info {
+.label {
   font-size: 0.78rem;
-  color: #b5a48a;
-  letter-spacing: 0.03em;
+  font-weight: 500;
+  color: #9c8e7a;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+}
+
+.book-info {
+  font-size: 0.73rem;
+  color: #9c8e7a;
+  letter-spacing: 0.02em;
   padding-top: 1rem;
-  border-top: 1px solid #d6cbb8;
+  border-top: 1px solid #ddd5c0;
   display: inline-block;
 }
 &lt;/style&gt;</div>
@@ -202,18 +82,13 @@
 
     <div class="step">
       <span class="step-num">6</span>
-      <div class="step-content">
-        Replace everything in the <strong>Back Template</strong> with the code below:
-      </div>
+      <div class="step-content">Replace everything in the <strong>Back Template</strong> with the code below:</div>
     </div>
 
     <div style="position:relative;">
       <div class="code-block" id="back-code"><button class="copy-btn" onclick="copyBlock('back-code')">Copy</button>{% raw %}&lt;div class="card-back"&gt;
-  &lt;div class="word-echo"&gt;{{word}}&lt;/div&gt;
+  &lt;div class="word"&gt;{{word}}&lt;/div&gt;
   &lt;div class="label"&gt;{{label}}&lt;/div&gt;
-  &lt;div class="divider-line"&gt;&lt;/div&gt;
-  &lt;div class="definition"&gt;{{definition}}&lt;/div&gt;
-  &lt;div class="divider-line" style="margin-top:1.5rem;"&gt;&lt;/div&gt;
   {{#usage_pos}}
   &lt;div class="morphology morphology--context"&gt;{{usage_pos}}&lt;/div&gt;
   {{/usage_pos}}
@@ -222,20 +97,17 @@
   &lt;div class="morphology"&gt;{{morphology}}&lt;/div&gt;
   {{/morphology}}
   {{/usage_pos}}
-  &lt;div class="usage"&gt;{{usage}}&lt;/div&gt;
-  &lt;div class="meta"&gt;
-    &lt;span class="book"&gt;{{book}}&lt;/span&gt;
-    &lt;span class="author"&gt;{{authors}}&lt;/span&gt;
-  &lt;/div&gt;
+  &lt;div class="divider-line"&gt;&lt;/div&gt;
+  &lt;div class="definition"&gt;{{definition}}&lt;/div&gt;
 &lt;/div&gt;{% endraw %}
 
 &lt;style&gt;
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@300;400;500;600&amp;display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@400;500&amp;display=swap');
 
 .card {
-  background: #f5f0e8;
-  font-family: 'Source Sans 3', Georgia, serif;
-  color: #2c2416;
+  background: #f7f2e9;
+  font-family: 'Inter', sans-serif;
+  color: #1e1a13;
   padding: 0;
   margin: 0;
   display: flex;
@@ -250,44 +122,29 @@
   padding: 2rem;
 }
 
-.word-echo {
+.word {
   font-family: 'Libre Baskerville', Georgia, serif;
-  font-size: 1.6rem;
+  font-size: 2.6rem;
   font-weight: 700;
-  color: #2c2416;
+  color: #1e1a13;
   margin-bottom: 0.2rem;
+  letter-spacing: -0.02em;
 }
 
 .label {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: #9a8b78;
+  color: #9c8e7a;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 0.75rem;
-}
-
-.divider-line {
-  width: 40px;
-  height: 2px;
-  background: #b5a48a;
-  margin: 0.75rem auto;
-}
-
-.definition {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 400;
-  color: #2c2416;
-  line-height: 1.6;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
 .morphology {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: #8b6914;
-  background: rgba(139, 105, 20, 0.08);
+  color: #8a6e2a;
+  background: rgba(201, 168, 76, 0.12);
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 3px;
@@ -297,114 +154,80 @@
 
 .morphology--context {
   color: #2d6a4f;
-  background: rgba(45, 106, 79, 0.08);
+  background: rgba(45, 106, 79, 0.09);
 }
 
-.usage {
-  font-family: 'Libre Baskerville', Georgia, serif;
-  font-size: 0.85rem;
-  font-style: italic;
-  color: #6b5d4d;
-  line-height: 1.7;
-  margin-bottom: 1.25rem;
-  padding: 0 0.25rem;
+.divider-line {
+  width: 36px;
+  height: 2px;
+  background: #ddd5c0;
+  margin: 0.75rem auto;
 }
 
-.meta {
-  font-size: 0.75rem;
-  color: #b5a48a;
-  display: flex;
-  justify-content: center;
-  gap: 0.4rem;
-}
-
-.meta .book {
-  font-style: italic;
-}
-
-.meta .author::before {
-  content: "\2014";
-  margin-right: 0.4rem;
+.definition {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #1e1a13;
+  line-height: 1.6;
 }
 &lt;/style&gt;</div>
     </div>
 
     <div class="step">
       <span class="step-num">7</span>
-      <div class="step-content">
-        Clear everything in the <strong>Styling</strong> section (the styles are already
-        embedded in the templates). Click <strong>Save</strong>.
-      </div>
+      <div class="step-content">Clear everything in the <strong>Styling</strong> section (the styles are already embedded in the templates). Click <strong>Save</strong>.</div>
     </div>
 
     <hr class="divider">
 
-    <h2 style="font-size:1.1rem; margin-bottom:1rem;">Importing your CSV</h2>
+    <h2 style="font-size:1.05rem;margin-bottom:1.1rem;">Importing your CSV</h2>
 
     <div class="step">
       <span class="step-num">1</span>
-      <div class="step-content">
-        Create a new deck in Anki for your vocabulary (e.g. "Spanish Reading") by clicking
-        <strong>Create Deck</strong> at the bottom of the main screen
-      </div>
+      <div class="step-content">Create a new deck in Anki for your vocabulary (e.g. &ldquo;Spanish Reading&rdquo;) by clicking <strong>Create Deck</strong> at the bottom of the main screen</div>
     </div>
 
     <div class="step">
       <span class="step-num">2</span>
-      <div class="step-content">
-        Go to <strong>File &gt; Import</strong> and select your downloaded CSV file
-      </div>
+      <div class="step-content">Go to <strong>File &gt; Import</strong> and select your downloaded CSV file</div>
     </div>
 
     <div class="step">
       <span class="step-num">3</span>
-      <div class="step-content">
-        Set the <strong>Note Type</strong> to <code style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;">Kindle Spanish Vocab</code>
-        and set the <strong>Deck</strong> to the deck you just created
-      </div>
+      <div class="step-content">Set the <strong>Note Type</strong> to <code>Kindle Spanish Vocab</code> and set the <strong>Deck</strong> to the deck you just created</div>
     </div>
 
     <div class="step">
       <span class="step-num">4</span>
-      <div class="step-content">
-        Change the <strong>Field Separator</strong> to <strong>Comma</strong>
-      </div>
+      <div class="step-content">Change the <strong>Field Separator</strong> to <strong>Comma</strong></div>
     </div>
 
     <div class="step">
       <span class="step-num">5</span>
-      <div class="step-content">
-        Make sure <strong>Allow HTML in fields</strong> is checked (this preserves the word highlighting in your context sentences)
-      </div>
+      <div class="step-content">Make sure <strong>Allow HTML in fields</strong> is checked (this preserves the word highlighting in your context sentences)</div>
     </div>
 
     <div class="step">
       <span class="step-num">6</span>
-      <div class="step-content">
-        Verify the field mapping matches: field 1 = word, field 2 = definition, field 3 = label,
-        field 4 = book, field 5 = authors, field 6 = usage, field 7 = morphology, field 8 = usage_pos.
-        Ignore any extra columns (morphology_source, status, fail_reasons).
-      </div>
+      <div class="step-content">Verify the field mapping matches: field 1 = word, field 2 = definition, field 3 = label, field 4 = book, field 5 = authors, field 6 = usage, field 7 = morphology, field 8 = usage_pos. Ignore any extra columns (morphology_source, status, fail_reasons).</div>
     </div>
 
     <div class="step">
       <span class="step-num">7</span>
-      <div class="step-content">
-        Click <strong>Import</strong>. Your cards are ready to study.
-      </div>
+      <div class="step-content">Click <strong>Import</strong>. Your cards are ready to study.</div>
     </div>
 
+    <a href="/" class="btn--link" style="display:inline-block;margin-top:0.5rem;">Back to upload</a>
   </div>
 </div>
 <script>
 function copyBlock(id) {
   var el = document.getElementById(id);
-  /* Clone and remove the button before extracting text */
   var clone = el.cloneNode(true);
   var btn = clone.querySelector('.copy-btn');
   if (btn) btn.remove();
   var text = clone.textContent;
-  /* Decode HTML entities back to actual characters */
   var tmp = document.createElement('textarea');
   tmp.innerHTML = text;
   text = tmp.value.trim();

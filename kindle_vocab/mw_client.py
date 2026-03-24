@@ -155,7 +155,7 @@ class MWClient:
         return result
 
     def batch_lookup(
-        self, stems: List[str], flog: ForensicLogger,
+        self, stems: List[str], flog: ForensicLogger, progress_fn=None,
     ) -> Dict[str, Dict[str, Any]]:
         """Look up all unique stems, returning {stem: result}."""
         unique = list(dict.fromkeys(stems))
@@ -179,6 +179,8 @@ class MWClient:
                     else f"{len(res['shortdefs'])} defs"
                 )
                 flog.bullet(f"[{i}/{len(unique)}] {stem!r} — {status}")
+            if progress_fn:
+                progress_fn(i, len(unique))
 
         flog.kv("cached", cached)
         flog.kv("fetched", fetched)

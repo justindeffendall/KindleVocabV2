@@ -1,22 +1,49 @@
 {% from "base.html" import head, header, flashes %}
 <!doctype html>
 <html lang="en">
-<head>
-  {{ head("Kindle Vocab") }}
-</head>
+<head>{{ head("Kindle Vocab") }}</head>
 <body>
 <div class="container container--narrow">
   {{ header() }}
+
   <div class="card">
     <h1 class="page-title">Upload your vocabulary</h1>
-    <p class="page-subtitle">
-Select your Kindle's <a href="/help" style="background:var(--paper-dark);padding:0.1rem 0.35rem;border-radius:2px;font-size:0.88em;font-family:monospace;color:var(--ink);text-decoration:none;border-bottom:1px dashed var(--ink-faint);">vocab.db</a> to generate Anki-ready flashcards from your Spanish reading.</p>
+    <p class="page-subtitle">Select your Kindle's <a href="/help" class="icode">vocab.db</a> to generate Anki flashcards from your Spanish reading.</p>
     {{ flashes() }}
     <form method="post" action="/upload" enctype="multipart/form-data">
       <input type="file" name="vocabdb" class="file-input" accept=".db,.sqlite,.sqlite3">
-      <button type="submit" class="btn btn--primary">Upload</button>
+      <button type="submit" class="btn btn--primary" style="width:100%;">Upload</button>
     </form>
   </div>
+
+  <div style="margin-top:1.75rem;">
+    <p style="font-size:0.7rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(156,142,122,0.55);margin-bottom:1rem;text-align:center;">Example flashcard</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:stretch;">
+
+      <div style="display:flex;flex-direction:column;">
+        <div style="flex:1;background:#f7f2e9;border:1px solid #ddd5c0;border-radius:6px;box-shadow:0 2px 14px rgba(44,36,22,0.12),0 1px 3px rgba(44,36,22,0.07);text-align:center;display:flex;flex-direction:column;justify-content:center;padding:2.25rem 1.5rem;position:relative;">
+          <span style="position:absolute;top:0.65rem;left:0.75rem;font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(156,142,122,0.5);">Front</span>
+          <div style="font-family:'Libre Baskerville',Georgia,serif;font-size:1.05rem;font-style:italic;color:#1e1a13;line-height:1.8;margin-bottom:1.4rem;padding:0 0.15rem;">En realidad, siempre he pensado que no hay memoria colectiva, lo que quizá <span style="font-weight:600;color:#c2410c;">sea</span> una forma de defensa de la especie humana.</div>
+          <div style="font-size:0.73rem;font-weight:500;color:#9c8e7a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1.4rem;">verb</div>
+          <div style="font-size:0.7rem;color:#9c8e7a;padding-top:0.85rem;border-top:1px solid #ddd5c0;display:flex;justify-content:center;gap:0.3rem;"><span style="font-style:italic;">El túnel</span><span>&#8212; Sabato, Ernesto</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;">
+        <div style="flex:1;background:#f7f2e9;border:1px solid #ddd5c0;border-radius:6px;box-shadow:0 2px 14px rgba(44,36,22,0.12),0 1px 3px rgba(44,36,22,0.07);text-align:center;display:flex;flex-direction:column;justify-content:center;padding:1.75rem 1.5rem;position:relative;">
+          <span style="position:absolute;top:0.65rem;left:0.75rem;font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(156,142,122,0.5);">Back</span>
+          <div style="font-family:'Libre Baskerville',Georgia,serif;font-size:2.3rem;font-weight:700;color:#1e1a13;margin-bottom:0.2rem;letter-spacing:-0.02em;">ser</div>
+          <div style="font-size:0.72rem;font-weight:500;color:#9c8e7a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.55rem;">verb</div>
+          <div style="font-size:0.75rem;font-weight:500;color:#2d6a4f;background:rgba(45,106,79,0.09);display:inline-block;padding:0.2rem 0.65rem;border-radius:3px;margin-bottom:0.7rem;">Subjunctive, Present, 3rd person, singular</div>
+          <div style="width:32px;height:2px;background:#ddd5c0;margin:0.65rem auto;"></div>
+          <div style="font-family:'Inter',sans-serif;font-size:1.08rem;color:#1e1a13;line-height:1.55;">to be | being</div>
+        </div>
+      </div>
+
+    </div>
+    <p style="text-align:center;margin-top:1rem;"><a href="/anki-setup" class="btn--link" style="font-size:0.82rem;">Setting up Anki</a></p>
+  </div>
+
 </div>
 </body>
 </html>

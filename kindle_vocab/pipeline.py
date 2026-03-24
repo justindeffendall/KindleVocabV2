@@ -122,7 +122,7 @@ def run_job(job_id: str, filters: Optional[Dict[str, Any]] = None) -> None:
 
     try:
         # ── Step 1: Load Stanza (first run downloads model) ──
-        update_progress(job_id, message="Loading Stanza model…")
+        update_progress(job_id, message="Loading model…")
         flog.sub("Stanza Init")
         from .tokenizer import tokenize
         tokenize("hola")  # warm up
@@ -132,7 +132,10 @@ def run_job(job_id: str, filters: Optional[Dict[str, Any]] = None) -> None:
         update_progress(job_id, message="Looking up definitions…")
         mw = MWClient(mw_cache_path)
         stems = [r["stem"] for r in records]
-        mw_cache = mw.batch_lookup(stems, flog)
+        mw_cache = mw.batch_lookup(
+            stems, flog,
+            progress_fn=lambda i, n: update_progress(job_id, message=f"Looking up definitions {i}/{n}…"),
+        )
 
         # ── Step 3: Pre-build conjugation tables ──
         update_progress(job_id, message="Building conjugation tables…")
